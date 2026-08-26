@@ -83,13 +83,13 @@ export default function HomePage() {
             </div>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 text-center card-shadow">
-            <div className="text-3xl font-black text-red-500">{stats.totalAnimals || animals.length}</div>
+            <div className="text-3xl font-black text-red-500">0</div>
             <div className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">
               Állat vár gazdára
             </div>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 text-center card-shadow">
-            <div className="text-3xl font-black text-sage-500">{stats.totalShelters || totalShelters}</div>
+            <div className="text-3xl font-black text-sage-500">0</div>
             <div className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">
               Partner menhely
             </div>
