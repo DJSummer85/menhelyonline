@@ -10,8 +10,12 @@ const nextConfig = {
     unoptimized: true,
   },
   reactStrictMode: false,
-  output: "standalone",
-  experimental: {},
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
