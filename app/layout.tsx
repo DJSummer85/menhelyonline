@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import ClientLayout from "@/components/ClientLayout";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "MenhelyOnline — Örökbefogadás egyszerűen",
   description:

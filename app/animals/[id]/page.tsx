@@ -24,7 +24,8 @@ import ShareButtons from "@/components/ShareButtons";
 import AnimalCardWithModal from "@/components/AnimalCardWithModal";
 
 export default function AnimalDetailPage() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = (params?.id as string) || "";
   const router = useRouter();
   const animal = animals.find((a) => a.id === id);
 
