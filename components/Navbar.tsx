@@ -24,6 +24,11 @@ export default function Navbar() {
 
   useEffect(() => {
     setUser(getUser());
+
+    // Figyeljük a bejelentkezés/kijelentkezés eseményeket
+    const handleAuth = () => setUser(getUser());
+    window.addEventListener("auth-change", handleAuth);
+    return () => window.removeEventListener("auth-change", handleAuth);
   }, []);
 
   useEffect(() => {
@@ -158,10 +163,13 @@ export default function Navbar() {
             </button>
             {user ? (
               <>
-                <span className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-300"
+                >
                   <User size={16} className="text-brand-500" />
                   {user.name}
-                </span>
+                </Link>
                 <button
                   type="button"
                   onClick={() => { logout(); setUser(null); }}

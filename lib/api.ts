@@ -30,13 +30,10 @@ export async function register(email: string, password: string, name: string, ro
     method: "POST",
     body: JSON.stringify({ email, password, name, role }),
   });
-  // Email visszaigazolás esetén NE tároljunk token-t
-  if (data.requiresVerification) {
-    return data;
-  }
   if (typeof window !== "undefined" && data.token) {
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
+    window.dispatchEvent(new Event("auth-change"));
   }
   return data;
 }
@@ -49,6 +46,7 @@ export async function login(email: string, password: string) {
   if (typeof window !== "undefined") {
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
+    window.dispatchEvent(new Event("auth-change"));
   }
   return data;
 }
@@ -57,6 +55,7 @@ export function logout() {
   if (typeof window !== "undefined") {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    window.dispatchEvent(new Event("auth-change"));
   }
 }
 
