@@ -1,7 +1,9 @@
 import fs from "fs";
 import path from "path";
 
-const DB_PATH = path.join(process.cwd(), "data", "db.json");
+const DB_PATH = typeof window === "undefined"
+  ? path.join("/tmp", "db.json")
+  : "";
 
 export interface User {
   id: number;
