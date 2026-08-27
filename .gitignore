@@ -45,3 +45,11 @@ Thumbs.db
 
 # Vercel adatbazi
 data/
+.neon
+.mcp.json
+
+# Neon skills
+.agents/
+.claude/
+skills-lock.json
+.mcp.json

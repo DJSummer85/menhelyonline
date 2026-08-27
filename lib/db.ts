@@ -1,6 +1,15 @@
 import { neon } from "@neondatabase/serverless";
 
-const sql = neon(process.env.DATABASE_URL!);
+let sql: ReturnType<typeof neon>;
+
+function getSql() {
+  if (!sql) {
+    const url = process.env.DATABASE_URL;
+    if (!url) throw new Error("DATABASE_URL környezeti változó nincs beállítva!");
+    sql = neon(url);
+  }
+  return sql;
+}
 
 export interface User {
   id: number;
@@ -18,7 +27,7 @@ let initialized = false;
 
 async function ensureTables() {
   if (initialized) return;
-  await sql`
+  await getSql()`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
       email TEXT UNIQUE NOT NULL,
@@ -36,19 +45,19 @@ async function ensureTables() {
 
 export async function findUserByEmail(email: string): Promise<User | undefined> {
   await ensureTables();
-  const rows = await sql`SELECT * FROM users WHERE email = ${email}`;
+  const rows = await getSql()`SELECT * FROM users WHERE email = ${email}`;
   return rows[0] as User | undefined;
 }
 
 export async function findUserById(id: number): Promise<User | undefined> {
   await ensureTables();
-  const rows = await sql`SELECT * FROM users WHERE id = ${id}`;
+  const rows = await getSql()`SELECT * FROM users WHERE id = ${id}`;
   return rows[0] as User | undefined;
 }
 
 export async function findUserByVerificationToken(token: string): Promise<User | undefined> {
   await ensureTables();
-  const rows = await sql`SELECT * FROM users WHERE verification_token = ${token}`;
+  const rows = await getSql()`SELECT * FROM users WHERE verification_token = ${token}`;
   return rows[0] as User | undefined;
 }
 
@@ -56,7 +65,7 @@ export async function createUser(
   user: Pick<User, "email" | "password" | "name" | "role">
 ): Promise<User> {
   await ensureTables();
-  const rows = await sql`
+  const rows = await getSql()`
     INSERT INTO users (email, password, name, role)
     VALUES (${user.email}, ${user.password}, ${user.name}, ${user.role})
     RETURNING *
@@ -67,12 +76,12 @@ export async function createUser(
 export async function updateUser(id: number, updates: Partial<Pick<User, "verified" | "verification_token" | "verification_expires">>): Promise<void> {
   await ensureTables();
   if (updates.verified !== undefined) {
-    await sql`UPDATE users SET verified = ${updates.verified} WHERE id = ${id}`;
+    await getSql()`UPDATE users SET verified = ${updates.verified} WHERE id = ${id}`;
   }
   if (updates.verification_token !== undefined) {
-    await sql`UPDATE users SET verification_token = ${updates.verification_token} WHERE id = ${id}`;
+    await getSql()`UPDATE users SET verification_token = ${updates.verification_token} WHERE id = ${id}`;
   }
   if (updates.verification_expires !== undefined) {
-    await sql`UPDATE users SET verification_expires = ${updates.verification_expires} WHERE id = ${id}`;
+    await getSql()`UPDATE users SET verification_expires = ${updates.verification_expires} WHERE id = ${id}`;
   }
 }
