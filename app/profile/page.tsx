@@ -108,6 +108,14 @@ export default function ProfilePage() {
 
           {/* Actions */}
           <div className="mt-6 space-y-3">
+            {user.role === "admin" && (
+              <Link
+                href="/admin"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-purple-500 text-white font-bold text-sm hover:bg-purple-600 transition-all btn-press shadow-lg shadow-purple-500/20"
+              >
+                ⚙️ Admin panel megnyitása
+              </Link>
+            )}
             <button
               type="button"
               onClick={() => {
