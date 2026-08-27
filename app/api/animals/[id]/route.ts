@@ -15,3 +15,14 @@ export async function GET(
   }
   return NextResponse.json(rows[0]);
 }
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  await ensureTables();
+  const sql = getSql();
+  const { id } = await params;
+  await sql`DELETE FROM animals WHERE id = ${parseInt(id)}`;
+  return NextResponse.json({ success: true });
+}
