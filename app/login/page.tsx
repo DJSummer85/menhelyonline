@@ -33,8 +33,9 @@ export default function LoginPage() {
   const [showResend, setShowResend] = useState(false);
 
   const handleResendDirect = async () => {
-    if (!email) {
-      setResendMessage("Kérlek, add meg az email címed!");
+    const resendEmail = email.trim();
+    if (!resendEmail) {
+      setResendMessage("⚠️ Kérlek, add meg az email címed!");
       return;
     }
     setResendLoading(true);
@@ -43,12 +44,12 @@ export default function LoginPage() {
       const res = await fetch(`${API_BASE}/api/auth/resend-verification`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: resendEmail }),
       });
       const data = await res.json();
       setResendMessage(data.message || "Email elküldve!");
     } catch {
-      setResendMessage("Nem sikerült elküldeni az emailt");
+      setResendMessage("⚠️ Nem sikerült elküldeni az emailt");
     } finally {
       setResendLoading(false);
     }
@@ -388,7 +389,7 @@ export default function LoginPage() {
               </button>
             </div>
             {resendMessage && (
-              <p className="mt-2 text-xs font-bold text-green-600 dark:text-green-400">{resendMessage}</p>
+              <p className={`mt-2 text-xs font-bold ${resendMessage.startsWith('⚠️') ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>{resendMessage}</p>
             )}
             <button
               type="button"
