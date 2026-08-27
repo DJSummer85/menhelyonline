@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { findUserByEmail, updateUser } from "@/lib/db";
+import { resend, FROM_EMAIL } from "@/lib/resend";
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,7 +40,24 @@ export async function POST(req: NextRequest) {
 
     const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3002";
     const verifyUrl = `${FRONTEND_URL}/verify?token=${verificationToken}`;
-    console.log(`Resent verification URL for ${email}: ${verifyUrl}`);
+
+    try {
+      await resend.emails.send({
+        from: FROM_EMAIL,
+        to: email,
+        subject: "MenhelyOnline - Email megerősítés",
+        html: `
+          <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #e11d48;">Email megerősítés 🐾</h2>
+            <p>Kattints az alábbi gombra a fiókod aktiválásához:</p>
+            <a href="${verifyUrl}" style="display: inline-block; padding: 12px 24px; background-color: #e11d48; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 16px 0;">Email megerősítése</a>
+            <p style="color: #666; font-size: 14px;">A link 24 óráig érvényes.</p>
+          </div>
+        `,
+      });
+    } catch (e) {
+      console.error("Email sending failed:", e);
+    }
 
     return NextResponse.json({ message: "Uj ellenorzo email elkuldve!" });
   } catch (err) {
