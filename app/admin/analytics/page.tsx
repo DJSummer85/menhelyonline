@@ -23,31 +23,25 @@ import {
   clearAnalytics,
   type AnalyticsSummary,
 } from "@/lib/analytics";
+import { getUser } from "@/lib/api";
+import Link from "next/link";
 
 export default function AdminAnalyticsPage() {
   const [data, setData] = useState<AnalyticsSummary | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const [password, setPassword] = useState("");
-  const [authenticated, setAuthenticated] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-
-  // Simple password protection (in production, use proper auth)
-  const ADMIN_PASSWORD = "menhely2026";
+  const [user, setUser] = useState<any>(null);
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    if (authenticated) {
+    const u = getUser();
+    setUser(u);
+    if (u && u.role === "admin") {
       setData(getAnalyticsSummary());
       setLoaded(true);
     }
-  }, [authenticated]);
-
-  const handleLogin = () => {
-    if (password === ADMIN_PASSWORD) {
-      setAuthenticated(true);
-    } else {
-      alert("Hibás jelszó!");
-    }
-  };
+    setChecked(true);
+  }, []);
 
   const handleExport = () => {
     const csv = exportAnalyticsCSV();
@@ -70,35 +64,35 @@ export default function AdminAnalyticsPage() {
     setData(getAnalyticsSummary());
   };
 
-  // Login screen
-  if (!authenticated) {
+  // Loading
+  if (!checked) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-20 dark:bg-gray-900 min-h-screen">
+        <div className="text-center">
+          <span className="animate-spin text-4xl">⏳</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Not logged in or not admin
+  if (!user || user.role !== "admin") {
     return (
       <div className="max-w-md mx-auto px-4 py-20 dark:bg-gray-900 min-h-screen">
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 card-shadow text-center animate-fade-in-up">
-          <div className="w-16 h-16 rounded-2xl bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center mx-auto mb-6">
-            <BarChart3 size={32} className="text-brand-500" />
-          </div>
+          <div className="text-6xl mb-4">🔒</div>
           <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
-            Admin Panel
+            Nincs hozzáférésed
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            Add meg a jelszót a statisztikák megtekintéséhez
+            CSAK adminisztrátorok érhetik el ezt az oldalt.
           </p>
-          <input
-            type="password"
-            placeholder="Jelszó..."
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-sm text-gray-800 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 mb-4"
-          />
-          <button
-            type="button"
-            onClick={handleLogin}
-            className="w-full py-3 rounded-xl bg-brand-500 text-white font-bold text-sm hover:bg-brand-600 transition-all duration-300 btn-press"
+          <Link
+            href="/login"
+            className="inline-block px-6 py-3 rounded-xl bg-brand-500 text-white font-bold text-sm hover:bg-brand-600 transition-all"
           >
-            Belépés
-          </button>
+            Bejelentkezés
+          </Link>
         </div>
       </div>
     );
