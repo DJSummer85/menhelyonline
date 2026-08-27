@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Ervenytelen token" }, { status: 401 });
     }
 
-    const user = findUserById(claims.id);
+    const user = await findUserById(claims.id);
     if (!user) {
       return NextResponse.json({ error: "Felhasznalo nem talalhato" }, { status: 404 });
     }

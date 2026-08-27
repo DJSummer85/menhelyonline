@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { findUserByEmail, createUser } from "@/lib/db";
+import { findUserByEmail, createUser, updateUser } from "@/lib/db";
 import { signToken } from "@/lib/auth-helpers";
 
 export async function POST(req: NextRequest) {
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const existing = findUserByEmail(email);
+    const existing = await findUserByEmail(email);
     if (existing) {
       return NextResponse.json(
         { error: "Ez az email mar regisztralva van" },
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       Date.now() + 24 * 60 * 60 * 1000
     ).toISOString();
 
-    const user = createUser({
+    const user = await createUser({
       email,
       password: hashedPassword,
       name,
@@ -37,8 +37,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Set verification token
-    const { updateUser: update } = await import("@/lib/db");
-    update(user.id, { verification_token: verificationToken, verification_expires: verificationExpires });
+    await updateUser(user.id, { verification_token: verificationToken, verification_expires: verificationExpires });
 
     // Try to send verification email (may fail if SMTP not configured)
     try {

@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = findUserByEmail(email);
+    const user = await findUserByEmail(email);
     if (!user) {
       return NextResponse.json({
         message: "Ha ilyen email cimmel regisztraltal, uj ellenorzo emailt kuldunk.",
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       Date.now() + 24 * 60 * 60 * 1000
     ).toISOString();
 
-    updateUser(user.id, {
+    await updateUser(user.id, {
       verification_token: verificationToken,
       verification_expires: verificationExpires,
     });

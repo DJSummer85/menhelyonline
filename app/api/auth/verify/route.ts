@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const user = findUserByVerificationToken(token);
+    const user = await findUserByVerificationToken(token);
     if (!user) {
       return NextResponse.json(
         { error: "ervenytelen ellenorzo token" },
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    updateUser(user.id, {
+    await updateUser(user.id, {
       verified: 1,
       verification_token: null,
       verification_expires: null,

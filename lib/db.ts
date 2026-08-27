@@ -1,9 +1,6 @@
-import fs from "fs";
-import path from "path";
+import { neon } from "@neondatabase/serverless";
 
-const DB_PATH = typeof window === "undefined"
-  ? path.join("/tmp", "db.json")
-  : "";
+const sql = neon(process.env.DATABASE_URL!);
 
 export interface User {
   id: number;
@@ -17,81 +14,65 @@ export interface User {
   created_at: string;
 }
 
-interface DB {
-  users: User[];
-  nextId: number;
+let initialized = false;
+
+async function ensureTables() {
+  if (initialized) return;
+  await sql`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      name TEXT NOT NULL,
+      role TEXT DEFAULT 'user' CHECK(role IN ('user', 'shelter', 'admin')),
+      verified INTEGER DEFAULT 0,
+      verification_token TEXT,
+      verification_expires TIMESTAMPTZ,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
+  initialized = true;
 }
 
-function ensureDir() {
-  const dir = path.join(process.cwd(), "data");
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+export async function findUserByEmail(email: string): Promise<User | undefined> {
+  await ensureTables();
+  const rows = await sql`SELECT * FROM users WHERE email = ${email}`;
+  return rows[0] as User | undefined;
 }
 
-function readDB(): DB {
-  ensureDir();
-  if (!fs.existsSync(DB_PATH)) {
-    const initial: DB = {
-      users: [
-        {
-          id: 1,
-          email: "admin@menhelyonline.hu",
-          password: "$2b$12$LJ3m4ys4SzYn5NjMIvf2ZeRvFQmPzVYK1fGfqF8e1K3z5M7x9N2bW",
-          name: "Admin",
-          role: "admin",
-          verified: 1,
-          verification_token: null,
-          verification_expires: null,
-          created_at: new Date().toISOString(),
-        },
-      ],
-      nextId: 2,
-    };
-    fs.writeFileSync(DB_PATH, JSON.stringify(initial, null, 2));
-    return initial;
+export async function findUserById(id: number): Promise<User | undefined> {
+  await ensureTables();
+  const rows = await sql`SELECT * FROM users WHERE id = ${id}`;
+  return rows[0] as User | undefined;
+}
+
+export async function findUserByVerificationToken(token: string): Promise<User | undefined> {
+  await ensureTables();
+  const rows = await sql`SELECT * FROM users WHERE verification_token = ${token}`;
+  return rows[0] as User | undefined;
+}
+
+export async function createUser(
+  user: Pick<User, "email" | "password" | "name" | "role">
+): Promise<User> {
+  await ensureTables();
+  const rows = await sql`
+    INSERT INTO users (email, password, name, role)
+    VALUES (${user.email}, ${user.password}, ${user.name}, ${user.role})
+    RETURNING *
+  `;
+  return rows[0] as User;
+}
+
+export async function updateUser(id: number, updates: Partial<Pick<User, "verified" | "verification_token" | "verification_expires">>): Promise<void> {
+  await ensureTables();
+  if (updates.verified !== undefined) {
+    await sql`UPDATE users SET verified = ${updates.verified} WHERE id = ${id}`;
   }
-  return JSON.parse(fs.readFileSync(DB_PATH, "utf-8"));
-}
-
-function writeDB(data: DB) {
-  ensureDir();
-  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
-}
-
-export function findUserByEmail(email: string): User | undefined {
-  return readDB().users.find((u) => u.email === email);
-}
-
-export function findUserById(id: number): User | undefined {
-  return readDB().users.find((u) => u.id === id);
-}
-
-export function findUserByVerificationToken(token: string): User | undefined {
-  return readDB().users.find((u) => u.verification_token === token);
-}
-
-export function createUser(
-  user: Omit<User, "id" | "created_at" | "verified" | "verification_token" | "verification_expires">
-): User {
-  const db = readDB();
-  const newUser: User = {
-    ...user,
-    id: db.nextId,
-    verified: 0,
-    verification_token: null,
-    verification_expires: null,
-    created_at: new Date().toISOString(),
-  };
-  db.users.push(newUser);
-  db.nextId++;
-  writeDB(db);
-  return newUser;
-}
-
-export function updateUser(id: number, updates: Partial<User>): void {
-  const db = readDB();
-  const idx = db.users.findIndex((u) => u.id === id);
-  if (idx !== -1) {
-    db.users[idx] = { ...db.users[idx], ...updates };
-    writeDB(db);
+  if (updates.verification_token !== undefined) {
+    await sql`UPDATE users SET verification_token = ${updates.verification_token} WHERE id = ${id}`;
+  }
+  if (updates.verification_expires !== undefined) {
+    await sql`UPDATE users SET verification_expires = ${updates.verification_expires} WHERE id = ${id}`;
   }
 }

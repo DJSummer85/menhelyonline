@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
 
-    const user = findUserByEmail(email);
+    const user = await findUserByEmail(email);
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return NextResponse.json(
         { error: "Hibas email vagy jelszo" },
