@@ -30,7 +30,11 @@ export async function register(email: string, password: string, name: string, ro
     method: "POST",
     body: JSON.stringify({ email, password, name, role }),
   });
-  if (typeof window !== "undefined") {
+  // Email visszaigazolás esetén NE tároljunk token-t
+  if (data.requiresVerification) {
+    return data;
+  }
+  if (typeof window !== "undefined" && data.token) {
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
   }

@@ -1,13 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, Eye, EyeOff } from "lucide-react";
+import { Heart, Eye, EyeOff, Mail } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { login, register } from "@/lib/api";
 
 type Tab = "login" | "register";
 type Role = "user" | "shelter";
+
+const API_BASE = typeof window !== "undefined"
+  ? (window.location.port === "3002" ? "http://localhost:3003" : "/api")
+  : "http://localhost:3003";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,6 +20,9 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [verificationNeeded, setVerificationNeeded] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -28,6 +35,8 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setVerificationNeeded(false);
+    setResendMessage("");
 
     try {
       if (tab === "login") {
@@ -38,9 +47,31 @@ export default function LoginPage() {
         setSubmitted(true);
       }
     } catch (err: any) {
-      setError(err.message || "Hiba történt");
+      const msg = err.message || "Hiba történt";
+      if (msg.includes("még nincs megerősítve")) {
+        setVerificationNeeded(true);
+      }
+      setError(msg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResendLoading(true);
+    setResendMessage("");
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/resend-verification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      setResendMessage(data.message || "Email elküldve!");
+    } catch {
+      setResendMessage("Nem sikerült elküldeni az emailt");
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -108,27 +139,55 @@ export default function LoginPage() {
           )}
 
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700/40 rounded-xl px-4 py-2.5 mb-4 text-xs text-red-600 dark:text-red-400 font-bold animate-fade-in">
-              ⚠️ {error}
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700/40 rounded-xl px-4 py-2.5 mb-4 animate-fade-in">
+              <p className="text-xs text-red-600 dark:text-red-400 font-bold">
+                ⚠️ {error}
+              </p>
+              {verificationNeeded && (
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={resendLoading}
+                    className="text-xs font-bold text-brand-500 hover:text-brand-600 underline transition-colors disabled:opacity-50"
+                  >
+                    {resendLoading ? "Küldés..." : "📧 Új ellenőrző email küldése"}
+                  </button>
+                  {resendMessage && (
+                    <p className="mt-2 text-xs text-green-600 dark:text-green-400 font-bold">{resendMessage}</p>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
           {submitted ? (
             <div className="text-center py-8 animate-scale-in">
-              <div className="text-5xl mb-4">✅</div>
+              <div className="text-5xl mb-4">📧</div>
               <h3 className="text-lg font-extrabold text-gray-800 dark:text-white mb-2">
-                Sikeres regisztráció!
+                Ellenőrizd az emailed!
               </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Most már bejelentkezhetsz az új fiókoddal.
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                Küldtünk egy visszaigazoló emailt a <span className="font-bold text-brand-500">{email}</span> címre.
               </p>
-              <button
-                type="button"
-                onClick={() => { setSubmitted(false); setTab("login"); }}
-                className="px-5 py-2 rounded-xl bg-brand-500 text-white font-bold text-sm hover:bg-brand-600 transition-all btn-press"
-              >
-                Rendben
-              </button>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mb-5">
+                Kattints a linkre a fiókod aktiválásához. A link 24 óráig érvényes.
+              </p>
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setSubmitted(false); setTab("login"); }}
+                  className="px-5 py-2.5 rounded-xl bg-brand-500 text-white font-bold text-sm hover:bg-brand-600 transition-all btn-press shadow-md"
+                >
+                  ✅ Rendben, bejelentkezek
+                </button>
+                <Link
+                  href={`/verify?resend=true&email=${encodeURIComponent(email)}`}
+                  className="text-xs text-gray-400 dark:text-gray-500 hover:text-brand-500 transition-colors"
+                >
+                  Nem kaptam emailt → Újraküldés
+                </Link>
+              </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
