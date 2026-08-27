@@ -2,11 +2,21 @@ import { neon } from "@neondatabase/serverless";
 
 let sql: ReturnType<typeof neon>;
 
+function cleanUrl(raw: string): string {
+  try {
+    const u = new URL(raw);
+    u.searchParams.delete("channel_binding");
+    return u.toString();
+  } catch {
+    return raw;
+  }
+}
+
 function getSql() {
   if (!sql) {
-    const url = process.env.DATABASE_URL;
-    if (!url) throw new Error("DATABASE_URL környezeti változó nincs beállítva!");
-    sql = neon(url);
+    const raw = process.env.DATABASE_URL;
+    if (!raw) throw new Error("DATABASE_URL környezeti változó nincs beállítva!");
+    sql = neon(cleanUrl(raw));
   }
   return sql;
 }
