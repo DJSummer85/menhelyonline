@@ -36,38 +36,22 @@ export async function POST(req: NextRequest) {
       role: role === "shelter" ? "shelter" : "user",
     });
 
-    // Set verification token
-    await updateUser(user.id, { verification_token: verificationToken, verification_expires: verificationExpires });
+    // TODO: Email verification visszakapcsolasa ha sajat domain lesz
+    // Egyelore auto-verify: azonnal be tud jelentkezni
+    await updateUser(user.id, { verified: 1 });
 
-    // Send verification email via Resend
-    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3002";
-    const verifyUrl = `${FRONTEND_URL}/verify?token=${verificationToken}`;
-
-    try {
-      const emailResult = await resend.emails.send({
-        from: FROM_EMAIL,
-        to: email,
-        subject: "MenhelyOnline - Email megerősítés",
-        html: `
-          <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #e11d48;">Üdvözöljük a MenhelyOnline-on! 🐾</h2>
-            <p>Köszönjük, hogy regisztráltál. A fiókod aktiválásához kattints az alábbi gombra:</p>
-            <a href="${verifyUrl}" style="display: inline-block; padding: 12px 24px; background-color: #e11d48; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 16px 0;">Email megerősítése</a>
-            <p style="color: #666; font-size: 14px;">Ha nem te regisztráltál ezzel az email címmel, hagyd figyelmen kívül ezt az üzenetet.</p>
-            <p style="color: #666; font-size: 14px;">A link 24 óráig érvényes.</p>
-            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-            <p style="color: #999; font-size: 12px;">MenhelyOnline - Örökbefogadás egyszerűen</p>
-          </div>
-        `,
-      });
-      console.log(`Email sent to ${email}:`, JSON.stringify(emailResult));
-    } catch (e: any) {
-      console.error("Email failed:", e?.message || e);
-    }
+    // Generate token a bejelentkezéshez
+    const token = await signToken({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    });
 
     return NextResponse.json({
-      message: "Sikeres regisztracio! Ellenorizd az email fiokodat.",
-      requiresVerification: true,
+      message: "Sikeres regisztracio!",
+      token,
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
     });
   } catch (err) {
     console.error("Register error:", err);

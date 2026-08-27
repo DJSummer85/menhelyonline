@@ -68,7 +68,8 @@ export default function LoginPage() {
         router.push("/");
       } else {
         await register(email, password, name || shelterName, role);
-        setSubmitted(true);
+        // Auto-login: azonnal átirányítás a főoldalra
+        router.push("/");
       }
     } catch (err: any) {
       const msg = err.message || "Hiba történt";

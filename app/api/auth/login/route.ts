@@ -15,16 +15,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!user.verified) {
-      return NextResponse.json(
-        {
-          error: "Az email cimed meg nincs megerositve. Kérlek, ellenorizd a postaladadat!",
-          requiresVerification: true,
-          email: user.email,
-        },
-        { status: 403 }
-      );
-    }
+    // TODO: Email verification visszakapcsolasa ha sajat domain lesz
+    // if (!user.verified) {
+    //   return NextResponse.json({ error: "...", requiresVerification: true }, { status: 403 });
+    // }
 
     const token = await signToken({
       id: user.id,
