@@ -24,7 +24,6 @@ import {
   type AnalyticsSummary,
 } from "@/lib/analytics";
 import { getUser } from "@/lib/api";
-import Link from "next/link";
 
 export default function AdminAnalyticsPage() {
   const [data, setData] = useState<AnalyticsSummary | null>(null);
