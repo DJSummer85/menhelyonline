@@ -405,7 +405,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── NEWSLETTER ── */}
+      {/* ── NEWSLETTER (COMING SOON) ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="bg-gradient-to-r from-sage-50 to-brand-50 dark:from-sage-500/5 dark:to-brand-500/5 rounded-3xl p-8 md:p-10 border border-sage-200 dark:border-sage-500/20 animate-fade-in-up">
           <div className="flex flex-col md:flex-row items-center gap-6">
@@ -413,25 +413,15 @@ export default function HomePage() {
               <div className="flex items-center gap-2 mb-2">
                 <Mail size={20} className="text-sage-500" />
                 <h3 className="text-xl font-extrabold text-gray-800 dark:text-white">
-                  Értesülj az újdonságokról!
+                  Értesülj az újdonságokról! 🔜
                 </h3>
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                Iratkozz fel hírlevelünkre, és értesülj, ha új állat érkezik a menhelyekre. Heti 1 levelet küldünk, semmi spam!
+                Hamarosan elérhető lesz a hírlevél feliratkozás! Értesülj, ha új állat érkezik a menhelyekre.
               </p>
             </div>
-            <div className="flex gap-2 w-full md:w-auto">
-              <input
-                type="email"
-                placeholder="E-mail címed..."
-                className="flex-1 md:w-64 px-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm text-gray-800 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-transparent transition-all"
-              />
-              <button
-                type="button"
-                className="px-5 py-3 rounded-xl bg-sage-500 text-white font-bold text-sm hover:bg-sage-600 transition-all duration-300 btn-press hover:scale-[1.02] whitespace-nowrap"
-              >
-                Feliratkozás
-              </button>
+            <div className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-sm font-semibold whitespace-notify">
+              <span>⏳</span> Hamarosan!
             </div>
           </div>
           <div className="flex items-center gap-4 mt-4 text-xs text-gray-400 dark:text-gray-500">
