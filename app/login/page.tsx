@@ -30,6 +30,29 @@ export default function LoginPage() {
   const [shelterName, setShelterName] = useState("");
   const [county, setCounty] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [showResend, setShowResend] = useState(false);
+
+  const handleResendDirect = async () => {
+    if (!email) {
+      setResendMessage("Kérlek, add meg az email címed!");
+      return;
+    }
+    setResendLoading(true);
+    setResendMessage("");
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/resend-verification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      setResendMessage(data.message || "Email elküldve!");
+    } catch {
+      setResendMessage("Nem sikerült elküldeni az emailt");
+    } finally {
+      setResendLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -330,6 +353,52 @@ export default function LoginPage() {
             </>
           )}
         </p>
+
+        {/* Resend verification section */}
+        {!showResend ? (
+          <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-2">
+            <button
+              type="button"
+              onClick={() => { setShowResend(true); setError(""); setResendMessage(""); }}
+              className="text-gray-400 dark:text-gray-500 hover:text-brand-500 transition-colors duration-200"
+            >
+              📧 Nem kaptad meg az aktiváló emailt? Újraküldés
+            </button>
+          </p>
+        ) : (
+          <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-xl animate-fade-in">
+            <p className="text-xs font-bold text-blue-700 dark:text-blue-300 mb-3">
+              📧 Aktiváló email újraküldése
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Regisztrált email cím"
+                className="flex-1 px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all"
+              />
+              <button
+                type="button"
+                onClick={handleResendDirect}
+                disabled={resendLoading}
+                className="px-4 py-2 rounded-xl bg-blue-500 text-white font-bold text-xs hover:bg-blue-600 transition-all btn-press disabled:opacity-50"
+              >
+                {resendLoading ? "⏳" : "Küldés"}
+              </button>
+            </div>
+            {resendMessage && (
+              <p className="mt-2 text-xs font-bold text-green-600 dark:text-green-400">{resendMessage}</p>
+            )}
+            <button
+              type="button"
+              onClick={() => setShowResend(false)}
+              className="mt-2 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              ✕ Bezárás
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
