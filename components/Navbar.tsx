@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Heart, Menu, X, Sun, Moon, LayoutDashboard } from "lucide-react";
+import { Heart, Menu, X, Sun, Moon, LayoutDashboard, LogOut, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTheme } from "@/components/DarkModeProvider";
-import { getUser } from "@/lib/api";
+import { getUser, logout } from "@/lib/api";
 
 const NAV_ITEMS = [
   { href: "/", label: "Kezdőlap" },
@@ -156,18 +156,36 @@ export default function Navbar() {
                 />
               </div>
             </button>
-            <Link
-              href="/login"
-              className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-brand-600 transition-all duration-300 hover:scale-105"
-            >
-              Belépés
-            </Link>
-            <Link
-              href="/login?tab=register"
-              className="px-5 py-2 rounded-xl text-sm font-bold bg-brand-500 text-white hover:bg-brand-600 transition-all duration-300 btn-press hover:shadow-lg hover:shadow-brand-500/25"
-            >
-              Regisztráció
-            </Link>
+            {user ? (
+              <>
+                <span className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  <User size={16} className="text-brand-500" />
+                  {user.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => { logout(); setUser(null); }}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-300 hover:scale-105"
+                >
+                  <LogOut size={16} />
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-brand-600 transition-all duration-300 hover:scale-105"
+                >
+                  Belépés
+                </Link>
+                <Link
+                  href="/login?tab=register"
+                  className="px-5 py-2 rounded-xl text-sm font-bold bg-brand-500 text-white hover:bg-brand-600 transition-all duration-300 btn-press hover:shadow-lg hover:shadow-brand-500/25"
+                >
+                  Regisztráció
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile: Favorites + Theme toggle + hamburger */}
@@ -279,20 +297,38 @@ export default function Navbar() {
             )}
           </Link>
           <div className="px-6 pt-2 flex gap-2">
-            <Link
-              href="/login"
-              onClick={() => setMobileOpen(false)}
-              className="flex-1 text-center py-2 rounded-xl text-sm font-semibold border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 btn-press transition-all duration-300"
-            >
-              Belépés
-            </Link>
-            <Link
-              href="/login?tab=register"
-              onClick={() => setMobileOpen(false)}
-              className="flex-1 text-center py-2 rounded-xl text-sm font-bold bg-brand-500 text-white btn-press transition-all duration-300"
-            >
-              Regisztráció
-            </Link>
+            {user ? (
+              <>
+                <span className="flex-1 flex items-center gap-2 py-2 px-3 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  <User size={16} className="text-brand-500" />
+                  {user.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => { logout(); setUser(null); setMobileOpen(false); }}
+                  className="flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-semibold text-red-500 border border-red-200 dark:border-red-800 btn-press transition-all duration-300"
+                >
+                  <LogOut size={14} /> Kilépés
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex-1 text-center py-2 rounded-xl text-sm font-semibold border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 btn-press transition-all duration-300"
+                >
+                  Belépés
+                </Link>
+                <Link
+                  href="/login?tab=register"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex-1 text-center py-2 rounded-xl text-sm font-bold bg-brand-500 text-white btn-press transition-all duration-300"
+                >
+                  Regisztráció
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
