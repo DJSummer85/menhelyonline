@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     const verifyUrl = `${FRONTEND_URL}/verify?token=${verificationToken}`;
 
     try {
-      await resend.emails.send({
+      const emailResult = await resend.emails.send({
         from: FROM_EMAIL,
         to: email,
         subject: "MenhelyOnline - Email megerősítés",
@@ -60,10 +60,9 @@ export async function POST(req: NextRequest) {
           </div>
         `,
       });
-      console.log(`Verification email sent to ${email}`);
-    } catch (e) {
-      console.error("Email sending failed:", e);
-      // Don't fail registration if email fails
+      console.log(`Email sent to ${email}:`, JSON.stringify(emailResult));
+    } catch (e: any) {
+      console.error("Email failed:", e?.message || e);
     }
 
     return NextResponse.json({

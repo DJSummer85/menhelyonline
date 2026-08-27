@@ -53,3 +53,6 @@ data/
 .claude/
 skills-lock.json
 .mcp.json
+
+.vercel
+.env*
