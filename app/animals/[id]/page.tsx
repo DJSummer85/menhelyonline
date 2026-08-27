@@ -27,7 +27,27 @@ export default function AnimalDetailPage() {
   const params = useParams();
   const id = (params?.id as string) || "";
   const router = useRouter();
-  const animal = animals.find((a) => a.id === id);
+  const [dbAnimal, setDbAnimal] = useState<any>(null);
+  const [loadingDb, setLoadingDb] = useState(true);
+
+  // Try static data first, then fetch from API
+  const staticAnimal = animals.find((a) => a.id === id);
+
+  useEffect(() => {
+    if (staticAnimal) {
+      setLoadingDb(false);
+      return;
+    }
+    fetch(`/api/animals/${id}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data) setDbAnimal(data);
+        setLoadingDb(false);
+      })
+      .catch(() => setLoadingDb(false));
+  }, [id, staticAnimal]);
+
+  const animal = staticAnimal || dbAnimal;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -252,6 +272,33 @@ export default function AnimalDetailPage() {
             </div>
           ))}
         </div>
+
+        {/* Location / Map link */}
+        {(animal.location || animal.county) && (
+          <div className="mb-6">
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                [animal.location, animal.county ? `${animal.county} megye` : "Magyarország"].filter(Boolean).join(", ")
+              )}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-2xl hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <MapPin size={20} className="text-blue-500 group-hover:scale-110 transition-transform" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-blue-700 dark:text-blue-300">
+                  📍 {animal.location || "Ismeretlen hely"}
+                </p>
+                <p className="text-xs text-blue-500 dark:text-blue-400">
+                  {animal.county ? `${animal.county} megye` : "Magyarország"} — Kattints a térkép megnyitásához
+                </p>
+              </div>
+              <ExternalLink size={14} className="text-blue-400 ml-auto shrink-0 group-hover:text-blue-600 transition-colors" />
+            </a>
+          </div>
+        )}
 
         {/* Pickup line */}
         {animal.pickupLine && (

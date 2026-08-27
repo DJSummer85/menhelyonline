@@ -1,11 +1,49 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { animals, SPECIES_FILTERS, COUNTIES, type AnimalSpecies } from "@/data/animals";
 import AnimalCardWithModal from "@/components/AnimalCardWithModal";
 
 export default function AnimalsPage() {
+  const [dbAnimals, setDbAnimals] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("/api/animals")
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => setDbAnimals(data || []))
+      .catch(() => {});
+  }, []);
+
+  // Merge static + database animals
+  const allAnimals = [
+    ...animals,
+    ...dbAnimals.map((a: any) => ({
+      id: String(a.id),
+      name: a.name,
+      species: a.species,
+      breed: a.breed,
+      ageText: a.age_text || a.age || "",
+      age: a.age || "",
+      gender: a.gender || "",
+      size: a.size || "közepes",
+      location: a.location || a.county || "",
+      county: a.county || "",
+      image: a.image || "/placeholder-pet.svg",
+      description: a.description || "",
+      childFriendly: !!a.child_friendly,
+      transportHelp: !!a.transport_help,
+      indoorOutdoor: a.indoor_outdoor || "mindkettő",
+      getsAlongWithOtherAnimals: !!a.gets_along_with_others,
+      vaccinated: !!a.vaccinated,
+      neutered: !!a.neutered,
+      pickupLine: a.pickup_line,
+      shelterId: a.shelter_id ? String(a.shelter_id) : null,
+      ownerId: a.owner_id,
+      demo: false,
+    })),
+  ];
+
   const [search, setSearch] = useState("");
   const [species, setSpecies] = useState<AnimalSpecies | "">("");
   const [age, setAge] = useState("");
@@ -20,7 +58,7 @@ export default function AnimalsPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   const filtered = useMemo(() => {
-    return animals.filter((a) => {
+    return allAnimals.filter((a) => {
       if (search && !a.name.toLowerCase().includes(search.toLowerCase()) && !(a.breed && a.breed.toLowerCase().includes(search.toLowerCase()))) return false;
       if (species && a.species !== species) return false;
       if (age && a.age !== age) return false;
