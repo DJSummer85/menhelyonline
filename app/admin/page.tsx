@@ -11,6 +11,9 @@ import {
   Eye,
   MapPin,
   LogOut,
+  AlertTriangle,
+  Check,
+  Clock,
 } from "lucide-react";
 import { getUser, logout } from "@/lib/api";
 
@@ -25,7 +28,8 @@ export default function AdminPage() {
   const [animals, setAnimals] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [stats, setStats] = useState({ animals: 0, users: 0, shelters: 0 });
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: "animal" | "user"; id: number } | null>(null);
+  const [statusConfirm, setStatusConfirm] = useState<{ id: number; newStatus: string; name: string } | null>(null);
 
   useEffect(() => {
     const u = getUser();
@@ -40,7 +44,7 @@ export default function AdminPage() {
   const loadData = async () => {
     try {
       const [animalsRes, usersRes] = await Promise.all([
-        fetch(`${API_BASE}/api/animals?status=available`),
+        fetch(`${API_BASE}/api/animals`),
         fetch(`${API_BASE}/api/admin/users`),
       ]);
       const animalsData = animalsRes.ok ? await animalsRes.json() : [];
@@ -65,6 +69,36 @@ export default function AdminPage() {
       setDeleteConfirm(null);
     } catch (e) {
       console.error("Delete error:", e);
+    }
+  };
+
+  const deleteUser = async (id: number) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/users/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setUsers(users.filter((u) => u.id !== id));
+        setDeleteConfirm(null);
+      } else {
+        const data = await res.json();
+        alert(data.error || "Hiba a törlésnél!");
+        setDeleteConfirm(null);
+      }
+    } catch (e) {
+      console.error("Delete user error:", e);
+    }
+  };
+
+  const updateAnimalStatus = async (id: number, newStatus: string) => {
+    try {
+      await fetch(`${API_BASE}/api/animals/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      setAnimals(animals.map((a) => (a.id === id ? { ...a, status: newStatus } : a)));
+      setStatusConfirm(null);
+    } catch (e) {
+      console.error("Status update error:", e);
     }
   };
 
@@ -209,9 +243,12 @@ export default function AdminPage() {
                     className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-gray-800 dark:text-white truncate">
-                      {a.name}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-sm text-gray-800 dark:text-white truncate">
+                        {a.name}
+                      </p>
+                      <StatusBadge status={a.status} />
+                    </div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                       {a.species} · {a.gender || "?"} · {a.size || "?"}
                       {a.location && (
@@ -220,6 +257,39 @@ export default function AdminPage() {
                         </span>
                       )}
                     </p>
+                  </div>
+                  {/* Status change buttons */}
+                  <div className="flex items-center gap-1">
+                    {a.status !== "available" && (
+                      <button
+                        type="button"
+                        onClick={() => setStatusConfirm({ id: a.id, newStatus: "available", name: a.name })}
+                        className="p-2 rounded-lg text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-500/10 transition-all"
+                        title="Elérhető"
+                      >
+                        <Check size={16} />
+                      </button>
+                    )}
+                    {a.status !== "pending" && (
+                      <button
+                        type="button"
+                        onClick={() => setStatusConfirm({ id: a.id, newStatus: "pending", name: a.name })}
+                        className="p-2 rounded-lg text-gray-400 hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-500/10 transition-all"
+                        title="Átveendő"
+                      >
+                        <Clock size={16} />
+                      </button>
+                    )}
+                    {a.status !== "adopted" && (
+                      <button
+                        type="button"
+                        onClick={() => setStatusConfirm({ id: a.id, newStatus: "adopted", name: a.name })}
+                        className="p-2 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all"
+                        title="Örökbefogadott"
+                      >
+                        <PawPrint size={16} />
+                      </button>
+                    )}
                   </div>
                   <Link
                     href={`/animals/${a.id}`}
@@ -230,7 +300,7 @@ export default function AdminPage() {
                   </Link>
                   <button
                     type="button"
-                    onClick={() => setDeleteConfirm(a.id)}
+                    onClick={() => setDeleteConfirm({ type: "animal", id: a.id })}
                     className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
                     title="Törlés"
                   >
@@ -280,6 +350,14 @@ export default function AdminPage() {
                   }`}>
                     {u.role === "admin" ? "Admin" : u.role === "shelter" ? "Menhely" : "Felhasználó"}
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteConfirm({ type: "user", id: u.id })}
+                    className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
+                    title="Felhasználó törlése"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               ))}
             </div>
@@ -311,15 +389,60 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* Status change confirmation modal */}
+      {statusConfirm !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm mx-4 card-shadow animate-scale-in">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-yellow-50 dark:bg-yellow-500/10 flex items-center justify-center">
+                <AlertTriangle size={20} className="text-yellow-500" />
+              </div>
+              <h3 className="text-lg font-extrabold text-gray-800 dark:text-white">
+                Státusz váltás
+              </h3>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+              <strong>{statusConfirm.name}</strong> státusza változik:
+            </p>
+            <p className="text-sm font-bold mb-6">
+              <span className="text-gray-400">{statusConfirm.newStatus === "available" ? "Elérhető" : statusConfirm.newStatus === "pending" ? "Átveendő" : "Örökbefogadott"}</span>
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setStatusConfirm(null)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+              >
+                Mégse
+              </button>
+              <button
+                type="button"
+                onClick={() => updateAnimalStatus(statusConfirm.id, statusConfirm.newStatus)}
+                className="flex-1 py-2.5 rounded-xl bg-brand-500 text-white text-sm font-bold hover:bg-brand-600 transition-all"
+              >
+                Megerősítés
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete confirmation modal */}
       {deleteConfirm !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm mx-4 card-shadow animate-scale-in">
-            <h3 className="text-lg font-extrabold text-gray-800 dark:text-white mb-2">
-              Biztosan törlöd?
-            </h3>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
+                <Trash2 size={20} className="text-red-500" />
+              </div>
+              <h3 className="text-lg font-extrabold text-gray-800 dark:text-white">
+                {deleteConfirm.type === "user" ? "Felhasználó törlése" : "Állat törlése"}
+              </h3>
+            </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Ez az állat véglegesen törlődik az adatbázisból!
+              {deleteConfirm.type === "user"
+                ? "Ez a felhasználó és az összes hozzá tartozó állat véglegesen törlődik!"
+                : "Ez az állat véglegesen törlődik az adatbázisból!"}
             </p>
             <div className="flex gap-3">
               <button
@@ -331,7 +454,10 @@ export default function AdminPage() {
               </button>
               <button
                 type="button"
-                onClick={() => deleteAnimal(deleteConfirm)}
+                onClick={() => {
+                  if (deleteConfirm.type === "user") deleteUser(deleteConfirm.id);
+                  else deleteAnimal(deleteConfirm.id);
+                }}
                 className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-all"
               >
                 Törlés
@@ -342,4 +468,29 @@ export default function AdminPage() {
       )}
     </div>
   );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  if (status === "available") {
+    return (
+      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400">
+        Elérhető
+      </span>
+    );
+  }
+  if (status === "pending") {
+    return (
+      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-100 dark:bg-yellow-500/20 text-yellow-600 dark:text-yellow-400">
+        Átveendő
+      </span>
+    );
+  }
+  if (status === "adopted") {
+    return (
+      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400">
+        Örökbefogadott
+      </span>
+    );
+  }
+  return null;
 }
