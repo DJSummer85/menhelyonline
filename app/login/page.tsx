@@ -64,11 +64,16 @@ export default function LoginPage() {
 
     try {
       if (tab === "login") {
-        await login(email, password);
-        router.push("/");
+        const result = await login(email, password);
+        // Admin fiók → admin oldalra
+        if (result.user?.role === "admin") {
+          router.push("/admin");
+        } else {
+          router.push("/");
+        }
       } else {
         await register(email, password, name || shelterName, role);
-        // Auto-login: azonnal átirányítás a főoldalra
+        // Auto-login: azonnal átirányítás
         router.push("/");
       }
     } catch (err: any) {

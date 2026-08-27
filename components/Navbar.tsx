@@ -117,6 +117,19 @@ export default function Navbar() {
                 <LayoutDashboard size={20} />
               </Link>
             )}
+            {/* Admin */}
+            {user?.role === "admin" && (
+              <Link
+                href="/admin"
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all duration-300 hover:scale-105 ${
+                  pathname === "/admin"
+                    ? "text-purple-600 bg-purple-50 dark:bg-purple-500/10 dark:text-purple-400"
+                    : "text-gray-500 dark:text-gray-400 hover:bg-purple-50 dark:hover:bg-purple-500/10 hover:text-purple-600"
+                }`}
+              >
+                ⚙️ Admin
+              </Link>
+            )}
             {/* Favorites */}
             <Link
               href="/favorites"
@@ -304,6 +317,19 @@ export default function Navbar() {
               </span>
             )}
           </Link>
+          {user?.role === "admin" && (
+            <Link
+              href="/admin"
+              onClick={() => setMobileOpen(false)}
+              className={`block px-6 py-3 text-sm font-semibold transition-all duration-300 ${
+                pathname === "/admin"
+                  ? "text-purple-600 bg-purple-50 dark:bg-gray-800"
+                  : "text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-gray-800"
+              }`}
+            >
+              ⚙️ Admin panel
+            </Link>
+          )}
           <div className="px-6 pt-2 flex gap-2">
             {user ? (
               <>
