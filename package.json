@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@types/leaflet": "^1.9.22",
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.10",
     "leaflet": "1.9",
     "lucide-react": "^0.460.0",
     "next": "^16.3.3",
@@ -18,6 +20,7 @@
     "react-leaflet": "^4.2.1"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.0.0",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
