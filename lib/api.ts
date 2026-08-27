@@ -26,7 +26,7 @@ async function fetchAPI(endpoint: string, options?: RequestInit) {
 
 // ── Auth ──
 export async function register(email: string, password: string, name: string, role = "user") {
-  const data = await fetchAPI("/api/auth/register", {
+  const data = await fetchAPI("/auth/register", {
     method: "POST",
     body: JSON.stringify({ email, password, name, role }),
   });
@@ -42,7 +42,7 @@ export async function register(email: string, password: string, name: string, ro
 }
 
 export async function login(email: string, password: string) {
-  const data = await fetchAPI("/api/auth/login", {
+  const data = await fetchAPI("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
@@ -68,7 +68,7 @@ export function getUser() {
 
 // ── Stats ──
 export async function getStats() {
-  return fetchAPI("/api/stats");
+  return fetchAPI("/stats");
 }
 
 // ── Animals ──
@@ -77,15 +77,15 @@ export async function getAnimals(params?: { species?: string; shelter_id?: numbe
   if (params?.species) query.set("species", params.species);
   if (params?.shelter_id) query.set("shelter_id", String(params.shelter_id));
   const qs = query.toString();
-  return fetchAPI(`/api/animals${qs ? `?${qs}` : ""}`);
+  return fetchAPI(`/animals${qs ? `?${qs}` : ""}`);
 }
 
 export async function getAnimal(id: number) {
-  return fetchAPI(`/api/animals/${id}`);
+  return fetchAPI(`/animals/${id}`);
 }
 
 export async function createAnimal(animal: any) {
-  return fetchAPI("/api/animals", {
+  return fetchAPI("/animals", {
     method: "POST",
     body: JSON.stringify(animal),
   });
@@ -93,15 +93,15 @@ export async function createAnimal(animal: any) {
 
 // ── Shelters ──
 export async function getShelters() {
-  return fetchAPI("/api/shelters");
+  return fetchAPI("/shelters");
 }
 
 export async function getMyShelter() {
-  return fetchAPI("/api/shelters/mine");
+  return fetchAPI("/shelters/mine");
 }
 
 export async function createShelter(shelter: any) {
-  return fetchAPI("/api/shelters", {
+  return fetchAPI("/shelters", {
     method: "POST",
     body: JSON.stringify(shelter),
   });
@@ -109,18 +109,18 @@ export async function createShelter(shelter: any) {
 
 // ── Adoptions ──
 export async function applyForAdoption(animalId: number, message?: string) {
-  return fetchAPI("/api/adoptions", {
+  return fetchAPI("/adoptions", {
     method: "POST",
     body: JSON.stringify({ animal_id: animalId, message }),
   });
 }
 
 export async function getMyAdoptions() {
-  return fetchAPI("/api/adoptions/mine");
+  return fetchAPI("/adoptions/mine");
 }
 
 export async function updateAdoption(id: number, status: "approved" | "rejected") {
-  return fetchAPI(`/api/adoptions/${id}`, {
+  return fetchAPI(`/adoptions/${id}`, {
     method: "PUT",
     body: JSON.stringify({ status }),
   });

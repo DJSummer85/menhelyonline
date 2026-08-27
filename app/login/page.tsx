@@ -10,7 +10,7 @@ type Tab = "login" | "register";
 type Role = "user" | "shelter";
 
 const API_BASE = typeof window !== "undefined"
-  ? (window.location.port === "3002" ? "http://localhost:3003" : "/api")
+  ? (window.location.port === "3002" ? "http://localhost:3003" : "")
   : "http://localhost:3003";
 
 export default function LoginPage() {
