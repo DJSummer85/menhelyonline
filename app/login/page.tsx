@@ -356,50 +356,56 @@ export default function LoginPage() {
         </p>
 
         {/* Resend verification section */}
-        {!showResend ? (
-          <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-2">
+        <div className="mt-4 text-center">
+          {!showResend ? (
             <button
               type="button"
-              onClick={() => { setShowResend(true); setError(""); setResendMessage(""); }}
-              className="text-gray-400 dark:text-gray-500 hover:text-brand-500 transition-colors duration-200"
+              onClick={() => {
+                setShowResend(true);
+                setError("");
+                setResendMessage("");
+              }}
+              className="text-xs text-gray-400 dark:text-gray-500 hover:text-brand-500 transition-colors duration-200 py-2 px-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800"
             >
-              📧 Nem kaptad meg az aktiváló emailt? Újraküldés
+              📧 Nem kaptad meg az aktiváló emailt? <span className="font-bold underline">Újraküldés</span>
             </button>
-          </p>
-        ) : (
-          <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-xl animate-fade-in">
-            <p className="text-xs font-bold text-blue-700 dark:text-blue-300 mb-3">
-              📧 Aktiváló email újraküldése
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Regisztrált email cím"
-                className="flex-1 px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all"
-              />
+          ) : (
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-xl animate-fade-in text-left">
+              <p className="text-xs font-bold text-blue-700 dark:text-blue-300 mb-3">
+                📧 Aktiváló email újraküldése
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Add meg a regisztrált email címed"
+                  className="flex-1 px-3 py-2.5 rounded-xl border border-blue-200 dark:border-blue-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={handleResendDirect}
+                  disabled={resendLoading}
+                  className="px-5 py-2.5 rounded-xl bg-blue-500 text-white font-bold text-sm hover:bg-blue-600 transition-all btn-press disabled:opacity-50 whitespace-nowrap"
+                >
+                  {resendLoading ? "⏳ Küldés..." : "📧 Küldés"}
+                </button>
+              </div>
+              {resendMessage && (
+                <div className={`mt-3 p-2.5 rounded-lg text-xs font-bold ${resendMessage.startsWith('⚠️') ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'}`}>
+                  {resendMessage}
+                </div>
+              )}
               <button
                 type="button"
-                onClick={handleResendDirect}
-                disabled={resendLoading}
-                className="px-4 py-2 rounded-xl bg-blue-500 text-white font-bold text-xs hover:bg-blue-600 transition-all btn-press disabled:opacity-50"
+                onClick={() => { setShowResend(false); setResendMessage(""); }}
+                className="mt-3 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
-                {resendLoading ? "⏳" : "Küldés"}
+                ✕ Bezárás
               </button>
             </div>
-            {resendMessage && (
-              <p className={`mt-2 text-xs font-bold ${resendMessage.startsWith('⚠️') ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>{resendMessage}</p>
-            )}
-            <button
-              type="button"
-              onClick={() => setShowResend(false)}
-              className="mt-2 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-            >
-              ✕ Bezárás
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
