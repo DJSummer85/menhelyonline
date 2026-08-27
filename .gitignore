@@ -40,5 +40,5 @@ backend/uploads/
 Thumbs.db
 *.log
 
-# Backend - külön projekt
-backend/
+*.db-shm
+*.db-wal
