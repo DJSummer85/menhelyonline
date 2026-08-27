@@ -1,0 +1,17 @@
+import { NextRequest, NextResponse } from "next/server";
+import { ensureTables, getSql } from "@/lib/db";
+
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  await ensureTables();
+  const sql = getSql();
+  const { id } = await params;
+
+  const rows = await sql`SELECT * FROM animals WHERE id = ${parseInt(id)}`;
+  if (!rows[0]) {
+    return NextResponse.json({ error: "Nem található" }, { status: 404 });
+  }
+  return NextResponse.json(rows[0]);
+}

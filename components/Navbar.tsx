@@ -10,8 +10,8 @@ import { getUser, logout } from "@/lib/api";
 const NAV_ITEMS = [
   { href: "/", label: "Kezdőlap" },
   { href: "/animals", label: "Állatok" },
+  { href: "/submit", label: "🐾 Felvétel" },
   { href: "/shelters", label: "Menhelyek" },
-  { href: "/calculator", label: "💰 Kalkulátor" },
   { href: "/adopt", label: "Hogyan fogadj örökbe?" },
 ];
 
