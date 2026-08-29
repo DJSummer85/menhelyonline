@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: "/", label: "Kezdőlap" },
   { href: "/animals", label: "Állatok" },
   { href: "/submit", label: "🐾 Felvétel" },
+  { href: "/calculator", label: "💰 Kalkulátor" },
   { href: "/shelters", label: "Menhelyek" },
   { href: "/adopt", label: "Hogyan fogadj örökbe?" },
 ];
